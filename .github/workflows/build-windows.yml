@@ -1,52 +1,89 @@
+```yaml
 name: Build Windows aria2
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build-windows:
     runs-on: windows-latest
 
     steps:
-    # 1️⃣ 检出源码
-    - uses: actions/checkout@v3
-    # 2️⃣ 安装 vcpkg
-    - name: Setup vcpkg
-      run: |
-        git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
-        C:\vcpkg\bootstrap-vcpkg.bat
 
-    # 3️⃣ 安装 aria2 依赖
-    - name: Install dependencies
-      run: |
-        C:\vcpkg\vcpkg install openssl:x64-windows zlib:x64-windows c-ares:x64-windows libssh2:x64-windows
+    # 1. 检出源码
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    # 4️⃣ 修改最大连接数
+    # 2. 安装 MSYS2 + mingw64 环境
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >
+          base-devel
+          mingw-w64-x86_64-toolchain
+          mingw-w64-x86_64-openssl
+          mingw-w64-x86_64-zlib
+          mingw-w64-x86_64-c-ares
+          mingw-w64-x86_64-libssh2
+          autoconf
+          automake
+          autotools
+          libtool
+          pkgconf
+
+    # 3. 查看源码目录（调试用，可删）
+    - name: Show files
+      shell: msys2 {0}
+      run: |
+        pwd
+        ls -la
+        ls src | head
+
+    # 4. 修改最大连接数
     - name: Patch max connections
+      shell: msys2 {0}
       run: |
-        powershell -Command "(gc src\OptionHandlerImpl.cc) -replace '16', '256' | Out-File src\OptionHandlerImpl.cc -Encoding UTF8"
+        sed -i 's/"1-16"/"1-256"/g' src/OptionHandlerImpl.cc
 
-    - name: Show repo files
-      run: cmd /c "dir /s .."
-    # 5️⃣ 配置 CMake 并生成 VS 工程
-    - name: Configure CMake
+    # 5. 生成 configure
+    - name: Generate configure
+      shell: msys2 {0}
       run: |
-        mkdir build
-        cd build
-        cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+        autoreconf -i
 
-    # 6️⃣ 编译 Release
-    - name: Build Release
+    # 6. 配置编译
+    - name: Configure
+      shell: msys2 {0}
       run: |
-        cd build
-        cmake --build . --config Release
-    - name: Show build output
-      run: dir build
-    # 7️⃣ 上传 exe 作为 artifact
-    - name: Upload build artifact
+        ./configure \
+          --host=x86_64-w64-mingw32 \
+          --disable-shared \
+          --enable-static \
+          --with-openssl \
+          --without-gnutls
+
+    # 7. 编译
+    - name: Build
+      shell: msys2 {0}
+      run: |
+        make -j4
+
+    # 8. 查看输出
+    - name: Show output
+      shell: msys2 {0}
+      run: |
+        ls -la src/
+        file src/aria2c.exe
+
+    # 9. 上传 exe
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: aria2c-windows-256threads
-        path: build/Release/aria2c.exe
+        name: aria2c-windows
+        path: src/aria2c.exe
+```
