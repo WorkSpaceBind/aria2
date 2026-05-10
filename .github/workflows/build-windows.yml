@@ -28,6 +28,7 @@ jobs:
           mingw-w64-x86_64-sqlite3
           mingw-w64-x86_64-libxml2
           mingw-w64-x86_64-cppunit
+          cmake
           gettext-devel
           autoconf
           automake
@@ -35,27 +36,32 @@ jobs:
           m4
           pkgconf
 
-    # 3. 递归生成 configure 脚本（根目录 + deps/wslay）
-    - name: Generate configure scripts
+    # 3. 编译 deps/wslay (使用 CMake)
+    - name: Build deps/wslay
       shell: msys2 {0}
       run: |
-        bash -c "autoreconf -fi"
-        bash -c "cd deps/wslay && autoreconf -fi && cd ../.."
+        cd deps/wslay
+        mkdir -p build
+        cd build
+        cmake -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=/mingw64 ..
+        cmake --build . --target install
+        cd ../..
 
-    # 4. 配置编译
-    - name: Configure
+    # 4. Configure aria2
+    - name: Configure aria2
       shell: msys2 {0}
       env:
         PKG_CONFIG_PATH: /mingw64/lib/pkgconfig
       run: |
-        bash -c "./configure \
+        ./configure \
           --disable-shared \
           --enable-static \
           --with-openssl \
-          --without-gnutls"
+          --without-gnutls \
+          --with-wslay=/mingw64
 
-    # 5. 编译
-    - name: Build
+    # 5. 编译 aria2
+    - name: Build aria2
       shell: msys2 {0}
       run: |
         make -j$(nproc)
