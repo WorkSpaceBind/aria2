@@ -1,4 +1,3 @@
-```yaml
 name: Build Windows aria2
 
 on:
@@ -86,4 +85,3 @@ jobs:
       with:
         name: aria2c-windows
         path: src/aria2c.exe
-```
