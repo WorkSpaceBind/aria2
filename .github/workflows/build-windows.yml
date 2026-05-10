@@ -49,12 +49,6 @@ jobs:
       run: |
         sed -i 's/"1-16"/"1-256"/g' src/OptionHandlerImpl.cc
 
-    # 5. 生成 configure
-    - name: Generate configure
-      shell: msys2 {0}
-      run: |
-        autoreconf -i -f
-
     # 6. 配置编译
     - name: Configure
       shell: msys2 {0}
