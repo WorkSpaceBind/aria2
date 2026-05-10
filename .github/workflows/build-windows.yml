@@ -13,7 +13,7 @@ jobs:
     # 1️⃣ 检出源码
     - uses: actions/checkout@v3
     - name: Show repo files
-      run: dir /s
+      run: dir
     # 2️⃣ 安装 vcpkg
     - name: Setup vcpkg
       run: |
