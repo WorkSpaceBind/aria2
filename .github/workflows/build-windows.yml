@@ -45,7 +45,7 @@ jobs:
       run: dir build
     # 7️⃣ 上传 exe 作为 artifact
     - name: Upload build artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: aria2c-windows-256threads
-        path: build
+        path: build/Release/aria2c.exe
