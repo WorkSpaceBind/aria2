@@ -25,15 +25,16 @@ jobs:
           mingw-w64-x86_64-c-ares
           mingw-w64-x86_64-libssh2
           mingw-w64-x86_64-sqlite3
-          mingw-w64-x86_64-gettext
           autoconf
           automake
+          gettext-devel
           libtool
           pkgconf
     - name: Generate configure
       shell: msys2 {0}
       run: |
-        ./mingw-config
+        autoreconf -i
+
 
     - name: Configure
       shell: msys2 {0}
