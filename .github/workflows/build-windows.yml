@@ -25,33 +25,41 @@ jobs:
           mingw-w64-x86_64-c-ares
           mingw-w64-x86_64-libssh2
           mingw-w64-x86_64-sqlite3
+          mingw-w64-x86_64-libxml2
+          mingw-w64-x86_64-cppunit
+          gettext-devel
           autoconf
           automake
-          gettext-devel
           libtool
           pkgconf
-    - name: Generate configure
+
+    - name: Generate configure (root)
       shell: msys2 {0}
       run: |
-        autoreconf -i
+        autoreconf -fi
 
+    - name: Generate configure (wslay)
+      shell: msys2 {0}
+      run: |
+        cd deps/wslay
+        autoreconf -fi
 
     - name: Configure
       shell: msys2 {0}
+      env:
+        PKG_CONFIG_PATH: /mingw64/lib/pkgconfig
       run: |
         ./configure \
+          --host=x86_64-w64-mingw32 \
           --disable-shared \
           --enable-static \
           --with-openssl \
           --without-gnutls
 
-      env:
-        PKG_CONFIG_PATH: /mingw64/lib/pkgconfig
-
     - name: Build
       shell: msys2 {0}
       run: |
-        make -j4
+        make -j$(nproc)
 
     - name: Show output
       shell: msys2 {0}
@@ -64,4 +72,4 @@ jobs:
       with:
         name: aria2c-windows
         path: src/aria2c.exe
-        
+
