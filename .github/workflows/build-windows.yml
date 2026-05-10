@@ -39,10 +39,8 @@ jobs:
     - name: Generate configure scripts
       shell: msys2 {0}
       run: |
-        autoreconf -fi
-        cd deps/wslay
-        autoreconf -fi
-        cd ../..
+        bash -c "autoreconf -fi"
+        bash -c "cd deps/wslay && autoreconf -fi && cd ../.."
 
     # 4. 配置编译
     - name: Configure
@@ -50,11 +48,11 @@ jobs:
       env:
         PKG_CONFIG_PATH: /mingw64/lib/pkgconfig
       run: |
-        ./configure \
+        bash -c "./configure \
           --disable-shared \
           --enable-static \
           --with-openssl \
-          --without-gnutls
+          --without-gnutls"
 
     # 5. 编译
     - name: Build
