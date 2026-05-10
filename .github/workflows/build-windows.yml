@@ -36,14 +36,14 @@ jobs:
           m4
           pkgconf
 
-    # 3. 编译 deps/wslay (使用 CMake)
+    # 3. 编译 deps/wslay (使用 CMake + Unix Makefiles)
     - name: Build deps/wslay
       shell: msys2 {0}
       run: |
         cd deps/wslay
         mkdir -p build
         cd build
-        cmake -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=/mingw64 ..
+        cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=/mingw64 ..
         cmake --build . --target install
         cd ../..
 
