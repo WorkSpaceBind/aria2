@@ -8,10 +8,11 @@ jobs:
     runs-on: windows-latest
 
     steps:
-
+    # 1. 检出源码
     - name: Checkout
       uses: actions/checkout@v4
 
+    # 2. 安装 MSYS2 + mingw64
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
       with:
@@ -31,45 +32,46 @@ jobs:
           autoconf
           automake
           libtool
+          m4
           pkgconf
 
-    - name: Generate configure (root)
+    # 3. 递归生成 configure 脚本（根目录 + deps/wslay）
+    - name: Generate configure scripts
       shell: msys2 {0}
       run: |
         autoreconf -fi
-
-    - name: Generate configure (wslay)
-      shell: msys2 {0}
-      run: |
         cd deps/wslay
         autoreconf -fi
+        cd ../..
 
+    # 4. 配置编译
     - name: Configure
       shell: msys2 {0}
       env:
         PKG_CONFIG_PATH: /mingw64/lib/pkgconfig
       run: |
         ./configure \
-          --host=x86_64-w64-mingw32 \
           --disable-shared \
           --enable-static \
           --with-openssl \
           --without-gnutls
 
+    # 5. 编译
     - name: Build
       shell: msys2 {0}
       run: |
         make -j$(nproc)
 
+    # 6. 查看输出
     - name: Show output
       shell: msys2 {0}
       run: |
         ls -la src/
         file src/aria2c.exe
 
+    # 7. 上传 exe
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: aria2c-windows
         path: src/aria2c.exe
-
