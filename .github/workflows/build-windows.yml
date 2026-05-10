@@ -29,9 +29,9 @@ jobs:
           mingw-w64-x86_64-zlib
           mingw-w64-x86_64-c-ares
           mingw-w64-x86_64-libssh2
+          mingw-w64-x86_64-sqlite3
           autoconf
           automake
-          gettext
           libtool
           pkgconf
 
@@ -48,6 +48,10 @@ jobs:
       shell: msys2 {0}
       run: |
         sed -i 's/"1-16"/"1-256"/g' src/OptionHandlerImpl.cc
+    - name: Generate configure
+      shell: msys2 {0}
+      run: |
+        autoconf
 
     # 6. 配置编译
     - name: Configure
