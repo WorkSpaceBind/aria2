@@ -35,3 +35,8 @@ jobs:
       run: |
         cd build
         cmake --build . --config Release
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: aria2c-windows
+        path: build/Release/aria2c.exe
